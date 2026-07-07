@@ -1,6 +1,6 @@
 import { chromium } from "playwright";
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 
 const STORAGE_STATE_PATH = "auth/storageState.json";
 
