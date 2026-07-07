@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ExtractionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+model Job {
+  id            String   @id @default(cuid())
+  linkedinJobId String   @unique
+  searchUrl     String
+  scrapedAt     DateTime
+  rawHtml       String
+  rawText       String
+  listMeta      Json
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  extractions Extraction[]
+}
+
+model Extraction {
+  id             String            @id @default(cuid())
+  jobId          String
+  job            Job               @relation(fields: [jobId], references: [id])
+  provider       String
+  model          String
+  promptVersion  String
+  schemaVersion  String
+  status         ExtractionStatus  @default(PENDING)
+  attempts       Int               @default(0)
+  lastError      String?
+  structuredData Json?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@unique([jobId, provider, promptVersion])
+  @@index([status])
+}

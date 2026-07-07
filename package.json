@@ -1,0 +1,21 @@
+{
+  "name": "jobs-scraper",
+  "version": "1.0.0",
+  "scripts": {
+    "scrape": "tsx src/cli/scrape.ts",
+    "extract": "tsx src/cli/extract.ts",
+    "db:migrate": "prisma migrate dev",
+    "db:generate": "prisma generate",
+    "login": "tsx src/scraper/login.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.20.0",
+    "playwright": "^1.48.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.20.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "@types/node": "^22.7.0"
+  }
+}
