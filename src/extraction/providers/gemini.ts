@@ -3,7 +3,7 @@ import { getPrompt } from "../promptRegistry";
 
 export class GeminiProvider implements ExtractionProvider {
   name = "gemini";
-  model = "gemini-2.5-flash";
+  model = "gemini-2.0-flash";
 
   constructor(
     private apiKey: string,
