@@ -14,10 +14,22 @@ enum ExtractionStatus {
   FAILED
 }
 
+enum ApplicationStatus {
+  APPLIED
+  SCREENED
+  INTERVIEWING
+  OFFERED
+  REJECTED
+  GHOSTED
+  WITHDRAWN
+}
+
 model Job {
   id            String   @id @default(cuid())
   linkedinJobId String   @unique
   searchUrl     String
+  searchName    String?
+  searchTags    String[]
   scrapedAt     DateTime
   rawHtml       String
   rawText       String
@@ -26,6 +38,7 @@ model Job {
   updatedAt     DateTime @updatedAt
 
   extractions Extraction[]
+  application Application?
 }
 
 model Extraction {
@@ -45,4 +58,18 @@ model Extraction {
 
   @@unique([jobId, provider, promptVersion])
   @@index([status])
+}
+
+model Application {
+  id            String            @id @default(cuid())
+  jobId         String            @unique
+  job           Job               @relation(fields: [jobId], references: [id])
+  status        ApplicationStatus @default(APPLIED)
+  resumeVersion String
+  appliedAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  notes         String?
+
+  @@index([status])
+  @@index([appliedAt])
 }

@@ -1,0 +1,28 @@
+import { z } from "zod";
+
+export const extractedJobSchema = z.object({
+  title: z.string(),
+  seniority: z.string().nullable(),
+  techStack: z.array(z.string()),
+  applicationMethod: z.string().nullable(),
+  location: z.string(),
+  softSkills: z.array(z.string()),
+  company: z.string(),
+  employmentType: z.string().nullable(),
+  salary: z.string().nullable(),
+  salaryMin: z.number().nullable(),
+  salaryMax: z.number().nullable(),
+  salaryCurrency: z.string().nullable(),
+  salaryPeriod: z.enum(["month", "year", "hour", "week"]).nullable(),
+  description: z.string(),
+  requiredQuals: z.array(z.string()),
+  preferredQuals: z.array(z.string()),
+  benefits: z.array(z.string()),
+  otherMetadata: z.record(z.string(), z.unknown()),
+  domainFitScore: z.number().int().min(0).max(100),
+  domainFitKeywords: z.array(z.string()),
+  seniorityMismatch: z.boolean(),
+  stackMatch: z.array(z.enum(["vue", "react", "angular", "typescript", "nodejs"])),
+  remoteScope: z.enum(["us-only", "europe-only", "latam-ok", "worldwide", "hybrid", "onsite", "unclear"]),
+  yearsOfExperience: z.number().nullable(),
+});

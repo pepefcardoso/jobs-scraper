@@ -1,5 +1,6 @@
 import { ExtractionProvider, ExtractedJob, ExtractionInput } from "../types";
-import { getPrompt } from "../promptRegistry";
+import { buildPrompt } from "./shared";
+import { extractedJobSchema } from "../schema";
 
 export class GroqProvider implements ExtractionProvider {
   name = "groq";
@@ -11,8 +12,7 @@ export class GroqProvider implements ExtractionProvider {
   ) {}
 
   async extract(input: ExtractionInput): Promise<ExtractedJob> {
-    const systemPrompt = getPrompt(this.promptVersion);
-    const userContent = `LIST METADATA:\n${JSON.stringify(input.listMeta)}\n\nRAW TEXT:\n${input.rawText}`;
+    const { systemPrompt, userContent } = buildPrompt(this.promptVersion, input);
 
     for (let attempt = 1; attempt <= 15; attempt++) {
       const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -56,7 +56,7 @@ export class GroqProvider implements ExtractionProvider {
       const text = data.choices?.[0]?.message?.content;
       if (!text) throw new Error("Groq: empty response");
 
-      return JSON.parse(text);
+      return extractedJobSchema.parse(JSON.parse(text));
     }
     
     throw new Error("Groq error: Max retries exceeded for 429 rate limits");

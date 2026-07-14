@@ -9,6 +9,8 @@ export interface ListMeta {
 export interface ScrapedJob {
   linkedinJobId: string;
   searchUrl: string;
+  searchName?: string;
+  searchTags?: string[];
   scrapedAt: Date;
   rawHtml: string;
   rawText: string;

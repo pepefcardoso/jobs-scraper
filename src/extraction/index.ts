@@ -1,6 +1,8 @@
 import { ExtractionProvider } from "./types";
 import { GeminiProvider } from "./providers/gemini";
 import { GroqProvider } from "./providers/groq";
+import { DeepSeekProvider } from "./providers/deepseek";
+import { config } from "../config";
 
 export function createExtractionProvider(
   providerName: string,
@@ -8,9 +10,11 @@ export function createExtractionProvider(
 ): ExtractionProvider {
   switch (providerName) {
     case "gemini":
-      return new GeminiProvider(process.env.GEMINI_API_KEY!, promptVersion);
+      return new GeminiProvider(config.geminiApiKey(), promptVersion);
     case "groq":
-      return new GroqProvider(process.env.GROQ_API_KEY!, promptVersion);
+      return new GroqProvider(config.groqApiKey(), promptVersion);
+    case "deepseek":
+      return new DeepSeekProvider(config.deepseekApiKey(), promptVersion);
     default:
       throw new Error(`Unknown extraction provider: ${providerName}`);
   }

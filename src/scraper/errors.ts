@@ -4,8 +4,4 @@ export class CheckpointDetectedError extends Error {
   }
 }
 
-export class RateLimitedError extends Error {
-  constructor(public retryAfterMs?: number) {
-    super("Rate limited (429)");
-  }
-}
+

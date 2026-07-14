@@ -1,9 +1,10 @@
 import { ExtractionProvider, ExtractedJob, ExtractionInput } from "../types";
-import { getPrompt } from "../promptRegistry";
+import { buildPrompt } from "./shared";
+import { extractedJobSchema } from "../schema";
 
 export class GeminiProvider implements ExtractionProvider {
   name = "gemini";
-  model = "gemini-2.0-flash";
+  model = "gemini-2.5-flash-lite";
 
   constructor(
     private apiKey: string,
@@ -11,8 +12,7 @@ export class GeminiProvider implements ExtractionProvider {
   ) {}
 
   async extract(input: ExtractionInput): Promise<ExtractedJob> {
-    const systemPrompt = getPrompt(this.promptVersion);
-    const userContent = `LIST METADATA:\n${JSON.stringify(input.listMeta)}\n\nRAW TEXT:\n${input.rawText}`;
+    const { systemPrompt, userContent } = buildPrompt(this.promptVersion, input);
 
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent?key=${this.apiKey}`,
@@ -35,6 +35,6 @@ export class GeminiProvider implements ExtractionProvider {
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!text) throw new Error("Gemini: empty response");
 
-    return JSON.parse(text);
+    return extractedJobSchema.parse(JSON.parse(text));
   }
 }

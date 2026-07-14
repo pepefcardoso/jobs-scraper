@@ -1,0 +1,22 @@
+{
+  "searches": [
+    {
+      "name": "erp-vue-junior-brazil",
+      "url": "https://www.linkedin.com/jobs/search/?keywords=erp+vue+junior&location=Brazil&f_WT=2",
+      "tags": ["erp", "vue", "junior", "brazil"],
+      "maxJobs": 50
+    },
+    {
+      "name": "fintech-frontend-latam",
+      "url": "https://www.linkedin.com/jobs/search/?keywords=fintech+frontend&location=Latin+America&f_WT=2",
+      "tags": ["fintech", "frontend", "latam"],
+      "maxJobs": 50
+    },
+    {
+      "name": "junior-frontend-remote",
+      "url": "https://www.linkedin.com/jobs/search/?keywords=junior+frontend+developer&f_WT=2",
+      "tags": ["junior", "frontend", "remote"],
+      "maxJobs": 30
+    }
+  ]
+}

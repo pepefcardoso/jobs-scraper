@@ -1,8 +1,9 @@
-import { chromium, BrowserContext, Page } from "playwright";
+import { chromium, BrowserContext, Page, ElementHandle } from "playwright";
 import { ScrapedJob, ListMeta } from "./types";
 import { assertNoCheckpoint } from "./detect";
 import { retryNetwork, retryOnce } from "./retry";
 import { prisma } from "../db/client";
+import { config } from "../config";
 
 const STORAGE_STATE_PATH = "auth/storageState.json";
 
@@ -74,7 +75,7 @@ async function extractListMeta(page: Page): Promise<ListMeta> {
   });
 }
 
-async function extractJobIdFromCard(card: any): Promise<string> {
+async function extractJobIdFromCard(card: ElementHandle<Element>): Promise<string> {
   const href = await card.getAttribute("href");
   const match = href?.match(/\/jobs\/view\/(\d+)/);
   return match?.[1] ?? "";
@@ -82,12 +83,12 @@ async function extractJobIdFromCard(card: any): Promise<string> {
 
 export async function scrapeSearch(
   searchUrl: string,
-  opts: { batchSize?: number; maxJobs?: number } = {},
+  opts: { batchSize?: number; maxJobs?: number; searchName?: string; searchTags?: string[] } = {},
 ): Promise<void> {
   const batchSize = opts.batchSize ?? 10;
   const maxJobs = opts.maxJobs ?? 50;
 
-  const browser = await chromium.launch({ headless: false });
+  const browser = await chromium.launch({ headless: config.headless });
   const context: BrowserContext = await browser.newContext({
     storageState: STORAGE_STATE_PATH,
   });
@@ -141,6 +142,8 @@ export async function scrapeSearch(
         batch.push({
           linkedinJobId,
           searchUrl,
+          searchName: opts.searchName,
+          searchTags: opts.searchTags,
           scrapedAt: new Date(),
           rawHtml,
           rawText,
@@ -172,23 +175,25 @@ export async function scrapeSearch(
 }
 
 async function persistBatch(batch: ScrapedJob[]) {
-  for (const job of batch) {
-    await prisma.job.upsert({
-      where: { linkedinJobId: job.linkedinJobId },
-      update: {
-        rawHtml: job.rawHtml,
-        rawText: job.rawText,
-        listMeta: job.listMeta as any,
-        scrapedAt: job.scrapedAt,
-      },
-      create: {
-        linkedinJobId: job.linkedinJobId,
-        searchUrl: job.searchUrl,
-        scrapedAt: job.scrapedAt,
-        rawHtml: job.rawHtml,
-        rawText: job.rawText,
-        listMeta: job.listMeta as any,
-      },
-    });
-  }
+  await prisma.$transaction(
+    batch.map((job) =>
+      prisma.job.upsert({
+        where: { linkedinJobId: job.linkedinJobId },
+        update: {
+          rawHtml: job.rawHtml,
+          rawText: job.rawText,
+          listMeta: job.listMeta as any,
+          scrapedAt: job.scrapedAt,
+          searchName: job.searchName,
+          searchTags: job.searchTags,
+        },
+        create: { 
+          ...job, 
+          listMeta: job.listMeta as any,
+          searchName: job.searchName,
+          searchTags: job.searchTags ?? [],
+        },
+      }),
+    ),
+  );
 }

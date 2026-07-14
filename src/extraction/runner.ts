@@ -2,7 +2,10 @@ import { prisma } from "../db/client";
 import { createExtractionProvider } from "./index";
 import { ExtractionProvider } from "./types";
 
-const SCHEMA_VERSION = "v1";
+function schemaVersionFor(promptVersion: string): string {
+  // v2+ prompts use v2 schema with domain-fit, salary parsing, remote scope
+  return promptVersion === "v1" ? "v1" : "v2";
+}
 const MAX_ATTEMPTS = 3;
 
 async function pLimit<T>(
@@ -42,18 +45,15 @@ export async function runExtraction(opts: {
         },
       },
     },
+    include: {
+      extractions: {
+        where: { provider: opts.provider, promptVersion: opts.promptVersion },
+      },
+    },
   });
 
   await pLimit(concurrency, pendingJobs, async (job) => {
-    const existing = await prisma.extraction.findUnique({
-      where: {
-        jobId_provider_promptVersion: {
-          jobId: job.id,
-          provider: opts.provider,
-          promptVersion: opts.promptVersion,
-        },
-      },
-    });
+    const existing = job.extractions[0];
 
     if (existing && existing.attempts >= MAX_ATTEMPTS) return;
 
@@ -80,14 +80,14 @@ export async function runExtraction(opts: {
           structuredData: structuredData as any,
           lastError: null,
           model: provider.model,
-          schemaVersion: SCHEMA_VERSION,
+          schemaVersion: schemaVersionFor(opts.promptVersion),
         },
         create: {
           jobId: job.id,
           provider: opts.provider,
           model: provider.model,
           promptVersion: opts.promptVersion,
-          schemaVersion: SCHEMA_VERSION,
+          schemaVersion: schemaVersionFor(opts.promptVersion),
           status: "SUCCESS",
           attempts,
           structuredData: structuredData as any,
@@ -112,7 +112,7 @@ export async function runExtraction(opts: {
           provider: opts.provider,
           model: provider.model,
           promptVersion: opts.promptVersion,
-          schemaVersion: SCHEMA_VERSION,
+          schemaVersion: schemaVersionFor(opts.promptVersion),
           status: attempts >= MAX_ATTEMPTS ? "FAILED" : "PENDING",
           attempts,
           lastError: (err as Error).message,

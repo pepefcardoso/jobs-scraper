@@ -4,6 +4,8 @@
   "scripts": {
     "scrape": "tsx src/cli/scrape.ts",
     "extract": "tsx src/cli/extract.ts",
+    "apply": "tsx src/cli/apply.ts",
+    "report": "tsx src/cli/report.ts",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
     "login": "tsx src/scraper/login.ts"
@@ -14,7 +16,8 @@
     "@prisma/config": "^7.8.0",
     "dotenv": "^17.4.2",
     "pg": "^8.22.0",
-    "playwright": "^1.48.0"
+    "playwright": "^1.48.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^22.7.0",
